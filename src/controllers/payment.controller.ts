@@ -53,7 +53,7 @@ export async function createPaymentOrder(req: Request, res: Response) {
       currency: "INR",
       name: "Cadence Music Academy",
       description: `${plan.name} — ${instrument}`,
-      prefill: { name: user.name, email: user.email, contact: user.phone },
+      prefill: { name: user.name, email: user.email, contact: user.phone ?? "" },
       theme: { color: "#6C3BFF" },
     },
   });

@@ -11,18 +11,14 @@ const instrument = z.enum(INSTRUMENTS);
 const classesPerWeek = z.union([z.literal(2), z.literal(4)]);
 
 // ---------- Auth ----------
-export const registerSchema = z.object({
-  name: z.string().trim().min(2).max(80),
-  email: z.email().toLowerCase(),
-  phone,
-  password: z.string().min(8, "Password must be at least 8 characters").max(100),
-  instruments: z.array(instrument).optional(),
+export const googleLoginSchema = z.object({
+  /** ID token from Google Sign-In on the device */
+  idToken: z.string().min(20),
 });
 
-export const loginSchema = z.object({
-  /** Email or phone number */
-  identifier: z.string().trim().min(3),
-  password: z.string().min(1),
+export const verifyPhoneSchema = z.object({
+  /** Firebase ID token obtained after confirming the OTP */
+  firebaseIdToken: z.string().min(20),
 });
 
 export const updateProfileSchema = z.object({
@@ -30,11 +26,6 @@ export const updateProfileSchema = z.object({
   instruments: z.array(instrument).optional(),
   avatarUrl: z.url().optional(),
   pushToken: z.string().max(300).optional(),
-});
-
-export const changePasswordSchema = z.object({
-  currentPassword: z.string().min(1),
-  newPassword: z.string().min(8).max(100),
 });
 
 // ---------- Payments ----------

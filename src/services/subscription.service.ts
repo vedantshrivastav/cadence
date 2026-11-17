@@ -73,13 +73,15 @@ export function activeSubscriptions(userId: Id) {
  * Returns how many subscriptions were activated.
  */
 export async function claimExistingStudentRecords(userId: Id): Promise<number> {
-  const user = await User.findById(userId).select("phone email").lean();
-  if (!user) return 0;
+  const user = await User.findById(userId).select("phone phoneVerified email role").lean();
+  // Only students with an OTP-verified phone can claim pre-paid records.
+  if (!user || user.role !== "student" || !user.phoneVerified || !user.phone) return 0;
 
-  const records = await ExistingStudent.find({
-    claimedBy: { $exists: false },
-    $or: [{ phone: user.phone }, { email: user.email }],
-  });
+  // Build conditions explicitly — never pass undefined values into the query.
+  const or: Record<string, string>[] = [{ phone: user.phone }];
+  if (user.email) or.push({ email: user.email });
+
+  const records = await ExistingStudent.find({ claimedBy: { $exists: false }, $or: or });
 
   let activated = 0;
   for (const rec of records) {

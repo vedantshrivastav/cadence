@@ -10,10 +10,16 @@ const envSchema = z.object({
   RAZORPAY_KEY_ID: z.string().min(1),
   RAZORPAY_KEY_SECRET: z.string().min(1),
   RAZORPAY_WEBHOOK_SECRET: z.string().default(""),
+  /** Comma-separated OAuth client IDs (Web + Android + iOS) the app uses for Google Sign-In. */
+  GOOGLE_CLIENT_IDS: z.string().min(1).transform((s) => s.split(",").map((x) => x.trim()).filter(Boolean)),
+  /** Firebase project used for Phone Auth (OTP). Project ID alone is enough to verify tokens. */
+  FIREBASE_PROJECT_ID: z.string().min(1),
+  /** Optional service-account credentials (only needed if you later use other Firebase Admin features). */
+  FIREBASE_CLIENT_EMAIL: z.string().optional(),
+  FIREBASE_PRIVATE_KEY: z.string().optional(),
   ADMIN_NAME: z.string().default("Cadence Admin"),
+  /** Google account email of the academy admin (created by `npm run seed`). */
   ADMIN_EMAIL: z.string().optional(),
-  ADMIN_PHONE: z.string().optional(),
-  ADMIN_PASSWORD: z.string().optional(),
   CORS_ORIGINS: z.string().default("*"),
 });
 

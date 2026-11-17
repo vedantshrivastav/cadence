@@ -1,15 +1,13 @@
 /**
  * npm run seed
- * Creates the two pricing plans and the first admin account (from .env). Safe to run more than once.
+ * Creates the two pricing plans and marks ADMIN_EMAIL (a Google account) as admin. Safe to run more than once.
  * Prices below are PLACEHOLDERS — change them here or later via PATCH /api/admin/plans/:id.
  */
-import bcrypt from "bcryptjs";
 import mongoose from "mongoose";
 import { env } from "../config/env.js";
 import { connectDB } from "../config/db.js";
 import { Plan } from "../models/Plan.js";
 import { User } from "../models/User.js";
-import { normalizePhone } from "../utils/phone.js";
 
 async function seed() {
   await connectDB();
@@ -37,22 +35,17 @@ async function seed() {
   }
   console.log("Plans ready");
 
-  if (env.ADMIN_EMAIL && env.ADMIN_PASSWORD && env.ADMIN_PHONE) {
-    const exists = await User.findOne({ email: env.ADMIN_EMAIL.toLowerCase() });
-    if (!exists) {
-      await User.create({
-        name: env.ADMIN_NAME,
-        email: env.ADMIN_EMAIL.toLowerCase(),
-        phone: normalizePhone(env.ADMIN_PHONE),
-        passwordHash: await bcrypt.hash(env.ADMIN_PASSWORD, 10),
-        role: "admin",
-      });
-      console.log(`Admin created: ${env.ADMIN_EMAIL}`);
-    } else {
-      console.log("Admin already exists");
-    }
+  // The admin signs in with Google using this email; the Google account is linked on first login.
+  if (env.ADMIN_EMAIL) {
+    const email = env.ADMIN_EMAIL.toLowerCase();
+    const res = await User.updateOne(
+      { email },
+      { $set: { role: "admin" }, $setOnInsert: { name: env.ADMIN_NAME, email } },
+      { upsert: true },
+    );
+    console.log(res.upsertedCount ? `Admin created: ${email}` : `Admin role ensured for: ${email}`);
   } else {
-    console.log("ADMIN_EMAIL / ADMIN_PHONE / ADMIN_PASSWORD not set — skipped admin creation");
+    console.log("ADMIN_EMAIL not set — skipped admin creation");
   }
 
   await mongoose.disconnect();

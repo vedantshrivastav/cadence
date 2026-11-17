@@ -10,7 +10,7 @@ interface JwtPayload { sub: string; role: Role }
 declare global {
   namespace Express {
     interface Request {
-      user?: { id: string; role: Role };
+      user?: { id: string; role: Role; phoneVerified: boolean };
     }
   }
 }
@@ -33,10 +33,18 @@ export const requireAuth: RequestHandler = async (req, _res, next) => {
   }
 
   // Re-check the DB so disabled accounts / role changes take effect immediately.
-  const user = await User.findById(payload.sub).select("role isActive").lean();
+  const user = await User.findById(payload.sub).select("role isActive phoneVerified").lean();
   if (!user || !user.isActive) throw AppError.unauthorized("Account not found or disabled");
 
-  req.user = { id: payload.sub, role: user.role };
+  req.user = { id: payload.sub, role: user.role, phoneVerified: Boolean(user.phoneVerified) };
+  next();
+};
+
+/** Students must finish phone OTP verification before using the app. Admins are exempt. */
+export const requireVerifiedPhone: RequestHandler = (req, _res, next) => {
+  if (req.user?.role !== "admin" && !req.user?.phoneVerified) {
+    throw new AppError(403, "Please verify your phone number to continue", { code: "PHONE_NOT_VERIFIED" });
+  }
   next();
 };
 

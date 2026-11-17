@@ -172,7 +172,9 @@ async function upsertExisting(s: z.infer<typeof existingStudentSchema>) {
 
 /** Links the record immediately if that student already has an account. */
 async function linkIfRegistered(phone: string, email?: string) {
-  const user = await User.findOne({ $or: [{ phone }, ...(email ? [{ email }] : [])] }).select("_id").lean();
+  const user = await User.findOne({ phoneVerified: true, $or: [{ phone }, ...(email ? [{ email }] : [])] })
+    .select("_id")
+    .lean();
   return user ? claimExistingStudentRecords(user._id) : 0;
 }
 

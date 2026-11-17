@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { requireAdmin, requireAuth } from "../middleware/auth.js";
+import { requireAdmin, requireAuth, requireVerifiedPhone } from "../middleware/auth.js";
 import { validateBody as v } from "../middleware/validate.js";
 import * as S from "../validators/schemas.js";
 import * as auth from "../controllers/auth.controller.js";
@@ -11,17 +11,19 @@ import * as admin from "../controllers/admin.controller.js";
 export const api = Router();
 
 // ---------- Public ----------
-api.post("/auth/register", v(S.registerSchema), auth.register);
-api.post("/auth/login", v(S.loginSchema), auth.login);
+api.post("/auth/google", v(S.googleLoginSchema), auth.googleLogin);
 api.get("/plans", cls.listPlans);
 api.get("/batches", cls.listBatches);
 
-// ---------- Student (logged in) ----------
+// ---------- Logged in (phone may not be verified yet) ----------
 api.use(requireAuth);
 
 api.get("/auth/me", auth.me);
 api.patch("/auth/me", v(S.updateProfileSchema), auth.updateProfile);
-api.post("/auth/change-password", v(S.changePasswordSchema), auth.changePassword);
+api.post("/auth/verify-phone", v(S.verifyPhoneSchema), auth.verifyPhone);
+
+// ---------- Everything below needs a verified phone (students) ----------
+api.use(requireVerifiedPhone);
 
 api.post("/payments/orders", v(S.createOrderSchema), pay.createPaymentOrder);
 api.post("/payments/verify", v(S.verifyPaymentSchema), pay.verifyPayment);

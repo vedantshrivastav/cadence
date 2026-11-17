@@ -4,12 +4,14 @@ import { INSTRUMENTS, ROLES } from "../config/constants.js";
 const userSchema = new Schema(
   {
     name: { type: String, required: true, trim: true },
+    /** From Google — always verified. */
     email: { type: String, required: true, unique: true, lowercase: true, trim: true },
-    /** Normalised 10-digit Indian mobile — used to match pre-existing paid students. */
-    phone: { type: String, required: true, unique: true },
-    passwordHash: { type: String, required: true, select: false },
+    /** Google account id ("sub"). Empty for an admin seeded by email who hasn't signed in yet. */
+    googleId: { type: String, unique: true, sparse: true },
+    /** Normalised 10-digit Indian mobile, set only after Firebase OTP verification. */
+    phone: { type: String, unique: true, sparse: true },
+    phoneVerified: { type: Boolean, default: false },
     role: { type: String, enum: ROLES, default: "student", required: true },
-    /** Instruments the student is interested in (for onboarding / announcements). */
     instruments: [{ type: String, enum: INSTRUMENTS }],
     avatarUrl: String,
     /** Expo / FCM push token for class reminders. */
