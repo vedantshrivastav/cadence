@@ -1,4 +1,4 @@
-import type { PropsWithChildren } from 'react';
+import type { PropsWithChildren, ReactNode } from 'react';
 import { RefreshControl, ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView, type Edge } from 'react-native-safe-area-context';
 
@@ -12,10 +12,19 @@ interface Props extends PropsWithChildren {
   /** Enables pull-to-refresh (scrollable screens only). */
   onRefresh?: () => void;
   refreshing?: boolean;
+  /** Pinned below the scrolling content, e.g. a checkout bar. */
+  footer?: ReactNode;
 }
 
 /** Standard page wrapper: safe area + background + padding. */
-export function Screen({ children, scroll = true, edges = ['left', 'right'], onRefresh, refreshing = false }: Props) {
+export function Screen({
+  children,
+  scroll = true,
+  edges = ['left', 'right'],
+  onRefresh,
+  refreshing = false,
+  footer,
+}: Props) {
   const colors = useColors();
   return (
     <SafeAreaView edges={edges} style={[styles.flex, { backgroundColor: colors.background }]}>
@@ -32,6 +41,7 @@ export function Screen({ children, scroll = true, edges = ['left', 'right'], onR
       ) : (
         <View style={[styles.flex, styles.content]}>{children}</View>
       )}
+      {footer}
     </SafeAreaView>
   );
 }

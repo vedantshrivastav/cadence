@@ -6,6 +6,7 @@ import { AppText } from '@/components/AppText';
 import { Button } from '@/components/Button';
 import { Card } from '@/components/Card';
 import { Screen } from '@/components/Screen';
+import { SubscriptionCard } from '@/components/SubscriptionCard';
 import { useApi } from '@/hooks/useApi';
 import { useNow } from '@/hooks/useNow';
 import { useSession } from '@/lib/session';
@@ -18,7 +19,6 @@ import { formatDate, greeting, MS } from '@/utils/time';
 import { AnnouncementPreview } from './components/AnnouncementPreview';
 import { NextClassCard } from './components/NextClassCard';
 import { NoSubscriptionCard } from './components/NoSubscriptionCard';
-import { SubscriptionCard } from './components/SubscriptionCard';
 import { WeeklySchedule } from './components/WeeklySchedule';
 
 async function loadHome() {
@@ -63,12 +63,20 @@ export function HomeScreen() {
     refresh();
   }, [allEnded, refreshing, refresh, now]);
 
+  // Session subscriptions change after a payment / phone verification → reload classes.
+  const seenSubs = useRef(sessionSubs);
+  useEffect(() => {
+    if (seenSubs.current === sessionSubs) return;
+    seenSubs.current = sessionSubs;
+    refresh();
+  }, [sessionSubs, refresh]);
+
   const goToPlans = useCallback(
     () => navigation.navigate('Main', { screen: 'PlansTab', params: { screen: 'Plans' } }),
     [navigation],
   );
   const goToLearn = useCallback(
-    () => navigation.navigate('Main', { screen: 'LearnTab', params: { screen: 'Learn' } }),
+    () => navigation.navigate('Main', { screen: 'LearnTab', params: { screen: 'Learn', params: { tab: 'updates' } } }),
     [navigation],
   );
 

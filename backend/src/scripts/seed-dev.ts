@@ -12,6 +12,7 @@ import { IST_OFFSET_MINUTES, WEEKDAYS, type Weekday } from "../config/constants.
 import { Announcement } from "../models/Announcement.js";
 import { Batch } from "../models/Batch.js";
 import { Plan } from "../models/Plan.js";
+import { Resource } from "../models/Resource.js";
 import { User } from "../models/User.js";
 import { grantSubscription } from "../services/subscription.service.js";
 
@@ -81,7 +82,34 @@ async function seedDev() {
     },
     { upsert: true },
   );
-  console.log("Announcement ready");
+  await Announcement.updateOne(
+    { title: "Piano recital this Sunday" },
+    {
+      $set: {
+        body: "All piano students: we're holding a short online recital this Sunday at 5 PM. Prepare one piece you've learnt this month.",
+        instruments: ["piano"],
+        isPinned: false,
+        createdBy: admin._id,
+      },
+    },
+    { upsert: true },
+  );
+  console.log("Announcements ready");
+
+  const resources = [
+    { title: "C major scale — fingering chart", type: "pdf", description: "Right and left hand fingering, two octaves." },
+    { title: "Hanon exercise No. 1 (slow practice)", type: "video", description: "Play along at 60 bpm, then 80 bpm." },
+    { title: "Metronome track — 60 to 100 bpm", type: "audio" },
+    { title: "Class recording — Lesson 3", type: "recording", description: "Chords and left-hand accompaniment." },
+  ] as const;
+  for (const r of resources) {
+    await Resource.updateOne(
+      { title: r.title },
+      { $set: { ...r, instrument: "piano", url: "https://example.com/cadence-dev-sample", createdBy: admin._id } },
+      { upsert: true },
+    );
+  }
+  console.log("Practice resources ready");
 
   await mongoose.disconnect();
 }

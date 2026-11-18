@@ -243,6 +243,10 @@ export async function deleteAnnouncement(req: Request<IdParams>, res: Response) 
   res.json({ success: true, message: "Deleted" });
 }
 
+export async function listAllResources(_req: Request, res: Response) {
+  const resources = await Resource.find().sort({ createdAt: -1 }).populate("batch", "title").limit(500).lean();
+  res.json({ success: true, resources });
+}
 export async function createResource(req: Request, res: Response) {
   const { batchId, ...rest } = req.body as z.infer<typeof resourceSchema>;
   const resource = await Resource.create({ ...rest, ...(batchId ? { batch: batchId } : {}), createdBy: currentUserId(req) });

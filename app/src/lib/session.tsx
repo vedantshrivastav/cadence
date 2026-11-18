@@ -1,6 +1,8 @@
 import { createContext, use, useCallback, useEffect, useState, type PropsWithChildren } from 'react';
 
 import { setAuthToken, setUnauthorizedHandler } from '@/lib/api';
+import { googleSignOut } from '@/lib/googleAuth';
+import { firebaseSignOut } from '@/lib/phoneAuth';
 import { tokenStorage } from '@/lib/storage';
 import { authService } from '@/services/auth';
 import type { AuthResponse, Subscription, User } from '@/types/api';
@@ -37,8 +39,7 @@ export function SessionProvider({ children }: PropsWithChildren) {
     setAuthToken(null);
     setUser(null);
     setSubscriptions([]);
-    await tokenStorage.clear();
-    // TODO: also sign out of Google + Firebase once those SDKs are added.
+    await Promise.all([tokenStorage.clear(), googleSignOut(), firebaseSignOut()]);
   }, []);
 
   const refresh = useCallback(async () => {

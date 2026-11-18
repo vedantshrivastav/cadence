@@ -75,6 +75,7 @@ a.post("/announcements", v(S.announcementSchema), admin.createAnnouncement);
 a.patch("/announcements/:id", v(S.announcementSchema.partial()), admin.updateAnnouncement);
 a.delete("/announcements/:id", admin.deleteAnnouncement);
 
+a.get("/resources", admin.listAllResources);
 a.post("/resources", v(S.resourceSchema), admin.createResource);
 a.delete("/resources/:id", admin.deleteResource);
 

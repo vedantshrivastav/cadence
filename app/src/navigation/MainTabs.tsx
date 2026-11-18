@@ -3,9 +3,24 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
 import { useSession } from '@/lib/session';
 import { AdminDashboardScreen } from '@/screens/admin/AdminDashboardScreen';
+import { AdminBatchesScreen } from '@/screens/admin/AdminBatchesScreen';
+import { BatchFormScreen } from '@/screens/admin/BatchFormScreen';
+import { AdminStudentsScreen } from '@/screens/admin/AdminStudentsScreen';
+import { StudentDetailScreen } from '@/screens/admin/StudentDetailScreen';
+import { ExistingStudentsScreen } from '@/screens/admin/ExistingStudentsScreen';
+import { ExistingStudentFormScreen } from '@/screens/admin/ExistingStudentFormScreen';
+import { ImportStudentsScreen } from '@/screens/admin/ImportStudentsScreen';
+import { AdminPaymentsScreen } from '@/screens/admin/AdminPaymentsScreen';
+import { AdminAnnouncementsScreen } from '@/screens/admin/AdminAnnouncementsScreen';
+import { AnnouncementFormScreen } from '@/screens/admin/AnnouncementFormScreen';
+import { AdminResourcesScreen } from '@/screens/admin/AdminResourcesScreen';
+import { ResourceFormScreen } from '@/screens/admin/ResourceFormScreen';
+import { AdminPlansScreen } from '@/screens/admin/AdminPlansScreen';
 import { HomeScreen } from '@/screens/home/HomeScreen';
 import { LearnScreen } from '@/screens/learn/LearnScreen';
+import { PaymentSuccessScreen } from '@/screens/plans/PaymentSuccessScreen';
 import { PlansScreen } from '@/screens/plans/PlansScreen';
+import { EditProfileScreen } from '@/screens/profile/EditProfileScreen';
 import { ProfileScreen } from '@/screens/profile/ProfileScreen';
 import { useColors } from '@/theme';
 
@@ -35,6 +50,12 @@ function PlansStackScreen() {
   return (
     <PlansStack.Navigator>
       <PlansStack.Screen name="Plans" component={PlansScreen} options={{ title: 'Plans' }} />
+      <PlansStack.Screen
+        name="PaymentSuccess"
+        component={PaymentSuccessScreen}
+        // No back button / swipe back to the checkout once paid.
+        options={{ headerShown: false, gestureEnabled: false, headerBackVisible: false }}
+      />
     </PlansStack.Navigator>
   );
 }
@@ -53,6 +74,7 @@ function ProfileStackScreen() {
   return (
     <ProfileStack.Navigator>
       <ProfileStack.Screen name="Profile" component={ProfileScreen} options={{ title: 'Profile' }} />
+      <ProfileStack.Screen name="EditProfile" component={EditProfileScreen} options={{ title: 'Edit profile' }} />
     </ProfileStack.Navigator>
   );
 }
@@ -62,6 +84,19 @@ function AdminStackScreen() {
   return (
     <AdminStack.Navigator>
       <AdminStack.Screen name="AdminDashboard" component={AdminDashboardScreen} options={{ title: 'Admin' }} />
+      <AdminStack.Screen name="AdminBatches" component={AdminBatchesScreen} options={{ title: 'Batches' }} />
+      <AdminStack.Screen name="BatchForm" component={BatchFormScreen} options={({ route }) => ({ title: route.params?.batch ? 'Edit batch' : 'New batch' })} />
+      <AdminStack.Screen name="AdminStudents" component={AdminStudentsScreen} options={{ title: 'Students' }} />
+      <AdminStack.Screen name="StudentDetail" component={StudentDetailScreen} options={{ title: 'Student' }} />
+      <AdminStack.Screen name="ExistingStudents" component={ExistingStudentsScreen} options={{ title: 'Already-paid students' }} />
+      <AdminStack.Screen name="ExistingStudentForm" component={ExistingStudentFormScreen} options={{ title: 'Add student' }} />
+      <AdminStack.Screen name="ImportStudents" component={ImportStudentsScreen} options={{ title: 'Import list' }} />
+      <AdminStack.Screen name="AdminPayments" component={AdminPaymentsScreen} options={{ title: 'Payments' }} />
+      <AdminStack.Screen name="AdminAnnouncements" component={AdminAnnouncementsScreen} options={{ title: 'Announcements' }} />
+      <AdminStack.Screen name="AnnouncementForm" component={AnnouncementFormScreen} options={({ route }) => ({ title: route.params?.announcement ? 'Edit announcement' : 'New announcement' })} />
+      <AdminStack.Screen name="AdminResources" component={AdminResourcesScreen} options={{ title: 'Practice material' }} />
+      <AdminStack.Screen name="ResourceForm" component={ResourceFormScreen} options={{ title: 'Add material' }} />
+      <AdminStack.Screen name="AdminPlans" component={AdminPlansScreen} options={{ title: 'Plans & prices' }} />
     </AdminStack.Navigator>
   );
 }
