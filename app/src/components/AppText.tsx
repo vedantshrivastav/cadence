@@ -1,8 +1,8 @@
-import { StyleSheet, Text, type TextProps } from 'react-native';
+import { Text, type TextProps } from 'react-native';
 
-import { fontSize, useColors, type Colors } from '@/theme';
+import { colors, type as typeScale, type Colors } from '@/theme';
 
-type Variant = 'title' | 'heading' | 'body' | 'caption';
+type Variant = keyof typeof typeScale;
 
 interface Props extends TextProps {
   variant?: Variant;
@@ -10,13 +10,5 @@ interface Props extends TextProps {
 }
 
 export function AppText({ variant = 'body', color = 'text', style, ...rest }: Props) {
-  const colors = useColors();
-  return <Text style={[styles[variant], { color: colors[color] }, style]} {...rest} />;
+  return <Text style={[typeScale[variant], { color: colors[color] }, style]} {...rest} />;
 }
-
-const styles = StyleSheet.create({
-  title: { fontSize: fontSize.xl, fontWeight: '700' },
-  heading: { fontSize: fontSize.lg, fontWeight: '600' },
-  body: { fontSize: fontSize.md, lineHeight: 22 },
-  caption: { fontSize: fontSize.sm, lineHeight: 18 },
-});

@@ -1,4 +1,4 @@
-import { ActivityIndicator, Pressable, StyleSheet } from 'react-native';
+import { ActivityIndicator, Pressable, StyleSheet, type StyleProp, type ViewStyle } from 'react-native';
 
 import { AppText } from '@/components/AppText';
 import { radius, spacing, useColors, type Colors } from '@/theme';
@@ -12,6 +12,9 @@ interface Props {
   variant?: Variant;
   loading?: boolean;
   disabled?: boolean;
+  /** Layout overrides for the button box (e.g. flex: 1 in a row). */
+  style?: StyleProp<ViewStyle>;
+  accessibilityLabel?: string;
 }
 
 const VARIANTS: Record<Variant, { bg: keyof Colors; fg: keyof Colors }> = {
@@ -20,7 +23,7 @@ const VARIANTS: Record<Variant, { bg: keyof Colors; fg: keyof Colors }> = {
   inverse: { bg: 'onPrimary', fg: 'primary' },
 };
 
-export function Button({ title, onPress, variant = 'primary', loading, disabled }: Props) {
+export function Button({ title, onPress, variant = 'primary', loading, disabled, style, accessibilityLabel }: Props) {
   const colors = useColors();
   const { bg, fg } = VARIANTS[variant];
   const inactive = disabled || loading;
@@ -28,10 +31,11 @@ export function Button({ title, onPress, variant = 'primary', loading, disabled 
   return (
     <Pressable
       accessibilityRole="button"
+      accessibilityLabel={accessibilityLabel}
       accessibilityState={{ disabled: !!inactive, busy: !!loading }}
       onPress={onPress}
       disabled={inactive}
-      style={({ pressed }) => [styles.base, { backgroundColor: colors[bg] }, (pressed || inactive) && styles.dim]}>
+      style={({ pressed }) => [styles.base, { backgroundColor: colors[bg] }, style, (pressed || inactive) && styles.dim]}>
       {loading ? (
         <ActivityIndicator color={colors[fg]} />
       ) : (

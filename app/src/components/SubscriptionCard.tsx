@@ -3,7 +3,7 @@ import { StyleSheet, View } from 'react-native';
 import { AppText } from '@/components/AppText';
 import { Button } from '@/components/Button';
 import { Card } from '@/components/Card';
-import { radius, useColors } from '@/theme';
+import { colors, instrumentColors, radius, spacing } from '@/theme';
 import type { Subscription } from '@/types/api';
 import { capitalize } from '@/utils/text';
 import { daysLeft, formatDate, MS } from '@/utils/time';
@@ -16,47 +16,57 @@ interface Props {
   onRenew: () => void;
 }
 
-/** Instrument + plan, days left with a progress bar, and a Renew prompt near expiry. */
+/** Days left is the one number; plan and end date are one quiet line each. */
 export function SubscriptionCard({ sub, now, onRenew }: Props) {
-  const colors = useColors();
   const start = new Date(sub.startDate);
   const end = new Date(sub.endDate);
   const left = daysLeft(end, now);
   const total = Math.max(1, Math.round((end.getTime() - start.getTime()) / MS.DAY));
   const progress = Math.min(1, Math.max(0, left / total));
   const expiringSoon = left <= RENEW_WARNING_DAYS;
-  const barColor = expiringSoon ? colors.danger : colors.success;
 
   return (
     <Card>
       <View style={styles.row}>
-        <AppText style={styles.bold}>{capitalize(sub.instrument)}</AppText>
-        <AppText variant="caption" color="textSecondary">
-          {sub.plan?.name ?? `${sub.classesPerWeek} classes / week`}
+        <View style={[styles.dot, { backgroundColor: instrumentColors[sub.instrument] }]} />
+        <AppText style={styles.flex} numberOfLines={1}>
+          {capitalize(sub.instrument)} · {sub.classesPerWeek} classes a week
         </AppText>
       </View>
 
-      <View style={[styles.track, { backgroundColor: colors.border }]}>
-        <View style={[styles.fill, { backgroundColor: barColor, width: `${progress * 100}%` }]} />
+      <View style={styles.numberRow}>
+        <AppText variant="title" color={expiringSoon ? 'danger' : 'text'}>
+          {left === 0 ? 'Last day' : left}
+        </AppText>
+        {left > 0 && (
+          <AppText color="muted" style={styles.flex}>
+            {left === 1 ? 'day left' : 'days left'}
+          </AppText>
+        )}
+        <AppText variant="caption" color="muted">
+          Ends {formatDate(end)}
+        </AppText>
       </View>
 
-      <View style={styles.row}>
-        <AppText variant="caption" color={expiringSoon ? 'danger' : 'textSecondary'} style={styles.bold}>
-          {left === 0 ? 'Ends today' : `${left} day${left === 1 ? '' : 's'} left`}
-        </AppText>
-        <AppText variant="caption" color="textSecondary">
-          Valid till {formatDate(end)}
-        </AppText>
+      <View style={styles.track}>
+        <View
+          style={[
+            styles.fill,
+            { backgroundColor: expiringSoon ? colors.danger : colors.primary, width: `${progress * 100}%` },
+          ]}
+        />
       </View>
 
-      {expiringSoon && <Button title="Renew now" onPress={onRenew} />}
+      {expiringSoon && <Button title="Renew" onPress={onRenew} />}
     </Card>
   );
 }
 
 const styles = StyleSheet.create({
-  row: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', gap: 8 },
-  bold: { fontWeight: '600' },
-  track: { height: 6, borderRadius: radius.pill, overflow: 'hidden' },
+  row: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
+  numberRow: { flexDirection: 'row', alignItems: 'baseline', gap: spacing.sm },
+  flex: { flex: 1 },
+  dot: { width: 8, height: 8, borderRadius: 4 },
+  track: { height: 4, borderRadius: radius.pill, overflow: 'hidden', backgroundColor: colors.border },
   fill: { height: '100%', borderRadius: radius.pill },
 });

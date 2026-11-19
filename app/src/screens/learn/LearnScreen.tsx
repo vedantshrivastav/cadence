@@ -100,7 +100,7 @@ function Practice({ items, locked, onViewPlans }: { items: Resource[]; locked: b
 
   if (locked) {
     return (
-      <Card tone="primary">
+      <Card variant="hero">
         <AppText variant="heading" color="onPrimary">
           Practice material is for subscribers 🔒
         </AppText>

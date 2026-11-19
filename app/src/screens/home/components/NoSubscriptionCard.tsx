@@ -7,22 +7,21 @@ import { Card } from '@/components/Card';
 /** Shown instead of the class cards when the student has no active subscription. */
 export function NoSubscriptionCard({ onViewPlans }: { onViewPlans: () => void }) {
   return (
-    <Card tone="primary">
+    <Card variant="hero">
       <AppText variant="heading" color="onPrimary">
-        Start your music journey 🎶
+        Learn violin, piano or drums, live
       </AppText>
       <AppText color="onPrimary" style={styles.muted}>
-        Live online classes for Violin, Piano and Drums — 2 or 4 classes a week. Pay securely with UPI.
+        2 or 4 classes a week on Google Meet. Pay with UPI.
       </AppText>
-      <Button title="View plans" variant="inverse" onPress={onViewPlans} />
+      <Button title="See plans" variant="inverse" onPress={onViewPlans} />
       <AppText variant="caption" color="onPrimary" style={styles.muted}>
-        Already paid the academy directly? Access is added automatically when your phone number matches our
-        records. Contact the academy if you don't see your classes.
+        Already paid the academy? Your classes appear here once your phone number matches our records.
       </AppText>
     </Card>
   );
 }
 
 const styles = StyleSheet.create({
-  muted: { opacity: 0.9 },
+  muted: { opacity: 0.8 },
 });

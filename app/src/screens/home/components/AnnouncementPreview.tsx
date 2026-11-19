@@ -1,30 +1,23 @@
-import { Pressable, StyleSheet, View } from 'react-native';
+import { Pressable, StyleSheet } from 'react-native';
 
 import { AppText } from '@/components/AppText';
 import { Card } from '@/components/Card';
-import { spacing } from '@/theme';
 import type { Announcement } from '@/types/api';
 import { formatDate } from '@/utils/time';
 
-/** Latest notice from the academy; tapping opens the Learn tab with the full list. */
+/** Latest notice: title, two lines, date. The "See all" link lives in the section header. */
 export function AnnouncementPreview({ item, onPress }: { item: Announcement; onPress: () => void }) {
   return (
     <Pressable onPress={onPress} accessibilityRole="button" style={({ pressed }) => pressed && styles.pressed}>
-      <Card>
-        <View style={styles.row}>
-          <AppText style={styles.title}>
-            {item.isPinned ? '📌 ' : ''}
-            {item.title}
-          </AppText>
-          <AppText variant="caption" color="textSecondary">
-            {formatDate(new Date(item.createdAt))}
-          </AppText>
-        </View>
-        <AppText color="textSecondary" numberOfLines={3}>
+      <Card variant="quiet">
+        <AppText style={styles.title} numberOfLines={1}>
+          {item.title}
+        </AppText>
+        <AppText color="muted" numberOfLines={2}>
           {item.body}
         </AppText>
-        <AppText variant="caption" color="primary" style={styles.title}>
-          See all updates →
+        <AppText variant="caption" color="muted">
+          {formatDate(new Date(item.createdAt))}
         </AppText>
       </Card>
     </Pressable>
@@ -32,7 +25,6 @@ export function AnnouncementPreview({ item, onPress }: { item: Announcement; onP
 }
 
 const styles = StyleSheet.create({
-  row: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', gap: spacing.sm },
-  title: { fontWeight: '600', flexShrink: 1 },
+  title: { fontWeight: '600' },
   pressed: { opacity: 0.7 },
 });
