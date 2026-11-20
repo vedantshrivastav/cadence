@@ -2,7 +2,7 @@ import { StyleSheet, View } from 'react-native';
 
 import { AppText } from '@/components/AppText';
 import { Card } from '@/components/Card';
-import { colors, instrumentColors, spacing } from '@/theme';
+import { colors, instrumentColors, size, spacing } from '@/theme';
 import type { Instrument, MyClass, ScheduleSlot } from '@/types/api';
 import { formatHHmm, shortDay, sortSlotsFromToday, WEEKDAYS } from '@/utils/time';
 
@@ -21,8 +21,8 @@ function slotOf(cls: MyClass): ScheduleSlot | null {
 }
 
 /**
- * One line per class: day, time, batch. The instrument is a colour dot, not repeated text.
- * The row for `nextClass` (the one in the hero card) gets a thin accent bar on the card's edge.
+ * A printed timetable: day, time, batch. The instrument is a colour dot, not repeated text.
+ * The row for `nextClass` (the one in the feature card) gets a thin accent marker on the card's edge.
  */
 export function WeeklySchedule({ classes, now, nextClass }: { classes: MyClass[]; now: Date; nextClass?: MyClass }) {
   const rows: Row[] = classes.flatMap(c =>
@@ -40,19 +40,21 @@ export function WeeklySchedule({ classes, now, nextClass }: { classes: MyClass[]
   const todayIst = WEEKDAYS[new Date(now.getTime() + 330 * 60_000).getUTCDay()];
 
   return (
-    <Card>
+    <Card list>
       {sortSlotsFromToday(rows, now).map((r, i) => {
         const isToday = r.day === todayIst;
         const isNext = !!next && r.batchId === nextClass?._id && r.day === next.day && r.startTime === next.startTime;
         return (
           <View key={r.key} style={[styles.row, i > 0 && styles.divider]}>
-            {isNext ? <View style={styles.nextBar} /> : null}
-            <AppText style={[styles.day, styles.medium]} color={isToday ? 'primary' : 'muted'}>
+            {isNext ? <View style={styles.nextMarker} /> : null}
+            <AppText variant="label" style={styles.day} color={isToday ? 'primary' : 'muted'}>
               {isToday ? 'Today' : shortDay(r.day)}
             </AppText>
-            <AppText style={[styles.time, styles.medium]}>{formatHHmm(r.startTime)}</AppText>
+            <AppText variant="figure" style={styles.time}>
+              {formatHHmm(r.startTime)}
+            </AppText>
             <View style={[styles.dot, { backgroundColor: instrumentColors[r.instrument] }]} />
-            <AppText color="muted" style={styles.flex} numberOfLines={1}>
+            <AppText color="textSecondary" style={styles.flex} numberOfLines={1}>
               {r.title}
             </AppText>
           </View>
@@ -63,22 +65,21 @@ export function WeeklySchedule({ classes, now, nextClass }: { classes: MyClass[]
 }
 
 const styles = StyleSheet.create({
-  row: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm, paddingVertical: 10 },
+  row: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm, minHeight: size.row },
   divider: { borderTopColor: colors.border, borderTopWidth: StyleSheet.hairlineWidth },
-  day: { width: 48 },
-  time: { width: 76 },
-  medium: { fontWeight: '600' },
-  // Sits on the card's inner edge (card padding is spacing.card).
-  nextBar: {
+  day: { width: size.scheduleDay },
+  time: { width: size.scheduleTime },
+  // Sits on the card's inner edge.
+  nextMarker: {
     position: 'absolute',
     left: -spacing.card,
     top: spacing.sm,
     bottom: spacing.sm,
-    width: 2,
-    borderTopRightRadius: 1,
-    borderBottomRightRadius: 1,
+    width: size.marker,
+    borderTopRightRadius: size.marker / 2,
+    borderBottomRightRadius: size.marker / 2,
     backgroundColor: colors.primary,
   },
-  dot: { width: 6, height: 6, borderRadius: 3 },
+  dot: { width: size.dot, height: size.dot, borderRadius: size.dot / 2 },
   flex: { flex: 1 },
 });

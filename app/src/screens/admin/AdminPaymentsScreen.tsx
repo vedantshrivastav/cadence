@@ -89,7 +89,7 @@ export function AdminPaymentsScreen() {
                 <Badge
                   label={p.status === 'created' ? 'STARTED' : p.status.toUpperCase()}
                   color={statusColor(p.status)}
-                  textColor={p.status === 'created' ? colors.text : '#FFFFFF'}
+                  textColor={p.status === 'created' ? colors.text : colors.onPrimary}
                 />
               </View>
             }

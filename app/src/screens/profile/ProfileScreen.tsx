@@ -1,11 +1,12 @@
 import { useNavigation } from '@react-navigation/native';
 import { useEffect, useRef, useState } from 'react';
-import { ActivityIndicator, Alert, StyleSheet, View } from 'react-native';
+import { ActivityIndicator, Alert, Pressable, StyleSheet, View } from 'react-native';
 
 import { AppText } from '@/components/AppText';
 import { Button } from '@/components/Button';
-import { Card } from '@/components/Card';
+import { Card, Stave } from '@/components/Card';
 import { Screen } from '@/components/Screen';
+import { Section } from '@/components/Section';
 import { SubscriptionCard } from '@/components/SubscriptionCard';
 import { useApi } from '@/hooks/useApi';
 import { useNow } from '@/hooks/useNow';
@@ -13,7 +14,7 @@ import { useSession } from '@/lib/session';
 import type { ProfileScreenProps } from '@/navigation/types';
 import { classesService } from '@/services/classes';
 import { paymentsService } from '@/services/payments';
-import { spacing, useColors } from '@/theme';
+import { colors, instrumentColors, motion, size, spacing, stave } from '@/theme';
 import { formatDate } from '@/utils/time';
 
 import { HelpCard } from './components/HelpCard';
@@ -34,7 +35,6 @@ async function loadActivity() {
 }
 
 export function ProfileScreen({ navigation }: ProfileScreenProps<'Profile'>) {
-  const colors = useColors();
   const rootNavigation = useNavigation();
   const now = useNow(60_000);
   const { user, subscriptions, isAdmin, refresh: refreshSession, signOut } = useSession();
@@ -67,7 +67,7 @@ export function ProfileScreen({ navigation }: ProfileScreenProps<'Profile'>) {
   const payments = activity.data?.payments ?? [];
   const attendance = activity.data?.attendance;
   const istMonth = (d: Date) => new Date(d.getTime() + IST_MS).toISOString().slice(0, 7);
-  const thisMonth = attendance?.attendance.filter(a => istMonth(new Date(a.date)) === istMonth(now)).length ?? 0;
+  const thisMonth = attendance?.attendance.filter(a => istMonth(new Date(a.date)) === istMonth(now)) ?? [];
 
   return (
     <Screen onRefresh={onRefresh} refreshing={activity.refreshing}>
@@ -79,7 +79,7 @@ export function ProfileScreen({ navigation }: ProfileScreenProps<'Profile'>) {
           <Section title="My subscriptions">
             {subscriptions.length === 0 ? (
               <Card>
-                <AppText color="textSecondary">You don't have an active subscription.</AppText>
+                <AppText color="textSecondary">You don't have an active subscription</AppText>
                 <Button title="View plans" onPress={goToPlans} />
               </Card>
             ) : (
@@ -96,21 +96,32 @@ export function ProfileScreen({ navigation }: ProfileScreenProps<'Profile'>) {
             </Card>
           ) : (
             <>
-              {/* Attendance */}
+              {/* Attendance: this month's classes as notes on the stave */}
               {attendance && (
                 <Section title="Attendance">
-                  <View style={styles.stats}>
-                    <Stat value={thisMonth} label="This month" />
-                    <Stat value={attendance.count} label={attendance.count >= 100 ? 'Recent classes' : 'All time'} />
-                  </View>
+                  <Card>
+                    <View style={styles.figureRow}>
+                      <AppText variant="title">{thisMonth.length}</AppText>
+                      <Stave noteColors={thisMonth.map(a => instrumentColors[a.batch?.instrument] ?? stave.noteNeutral)} />
+                    </View>
+                    <AppText variant="caption" color="textSecondary">
+                      {thisMonth.length === 1 ? 'class' : 'classes'} this month · {attendance.count}{' '}
+                      {attendance.count >= 100 ? 'recent' : 'all time'}
+                    </AppText>
+                  </Card>
                   {attendance.attendance.length > 0 && (
-                    <Card>
+                    <Card list>
                       {attendance.attendance.slice(0, PREVIEW_COUNT).map((a, i) => (
-                        <View key={a._id} style={[styles.listRow, i > 0 && divider(colors.border)]}>
-                          <AppText style={styles.flex} numberOfLines={1}>
+                        <View key={a._id} style={[styles.listRow, i > 0 && styles.divider]}>
+                          <View
+                            style={[styles.dot, { backgroundColor: instrumentColors[a.batch?.instrument] ?? stave.noteNeutral }]}
+                          />
+                          <AppText color="textSecondary" style={styles.flex} numberOfLines={1}>
                             {a.batch?.title ?? 'Class'}
                           </AppText>
-                          <AppText color="textSecondary">{formatDate(new Date(a.date))}</AppText>
+                          <AppText variant="label" color="muted">
+                            {formatDate(new Date(a.date))}
+                          </AppText>
                         </View>
                       ))}
                     </Card>
@@ -122,20 +133,23 @@ export function ProfileScreen({ navigation }: ProfileScreenProps<'Profile'>) {
               {activity.data?.payments && (
                 <Section title="Payment history">
                   {payments.length === 0 ? (
-                    <AppText color="textSecondary">No payments yet.</AppText>
+                    <AppText color="textSecondary">No payments yet</AppText>
                   ) : (
-                    <Card>
+                    <Card list>
                       {(showAllPayments ? payments : payments.slice(0, PREVIEW_COUNT)).map((p, i) => (
-                        <View key={p._id} style={[styles.paymentRow, i > 0 && divider(colors.border)]}>
+                        <View key={p._id} style={i > 0 && styles.divider}>
                           <PaymentRow payment={p} />
                         </View>
                       ))}
                       {payments.length > PREVIEW_COUNT && (
-                        <Button
-                          title={showAllPayments ? 'Show less' : `Show all ${payments.length}`}
-                          variant="secondary"
-                          onPress={() => setShowAllPayments(s => !s)}
-                        />
+                        <Pressable
+                          onPress={() => setShowAllPayments(v => !v)}
+                          accessibilityRole="button"
+                          style={({ pressed }) => [styles.listRow, styles.divider, pressed && styles.pressed]}>
+                          <AppText variant="label" color="primary">
+                            {showAllPayments ? 'Show less' : `Show all ${payments.length}`}
+                          </AppText>
+                        </Pressable>
                       )}
                     </Card>
                   )}
@@ -155,34 +169,11 @@ export function ProfileScreen({ navigation }: ProfileScreenProps<'Profile'>) {
   );
 }
 
-function Section({ title, children }: { title: string; children: React.ReactNode }) {
-  return (
-    <View style={styles.section}>
-      <AppText variant="heading">{title}</AppText>
-      {children}
-    </View>
-  );
-}
-
-function Stat({ value, label }: { value: number; label: string }) {
-  return (
-    <Card style={styles.flex}>
-      <AppText variant="title" color="primary">
-        {value}
-      </AppText>
-      <AppText variant="caption" color="textSecondary">
-        {label}
-      </AppText>
-    </Card>
-  );
-}
-
-const divider = (color: string) => ({ borderTopColor: color, borderTopWidth: StyleSheet.hairlineWidth });
-
 const styles = StyleSheet.create({
-  section: { gap: spacing.sm },
-  stats: { flexDirection: 'row', gap: spacing.sm },
   flex: { flex: 1 },
-  listRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.md, paddingVertical: spacing.sm },
-  paymentRow: { paddingVertical: spacing.sm },
+  figureRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.md },
+  listRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.md, minHeight: size.row },
+  divider: { borderTopColor: colors.border, borderTopWidth: StyleSheet.hairlineWidth },
+  dot: { width: size.dot, height: size.dot, borderRadius: size.dot / 2 },
+  pressed: { opacity: motion.pressedOpacity },
 });

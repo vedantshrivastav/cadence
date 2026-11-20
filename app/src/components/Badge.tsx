@@ -1,18 +1,18 @@
 import { StyleSheet, View } from 'react-native';
 
 import { AppText } from '@/components/AppText';
-import { radius, spacing } from '@/theme';
+import { colors, radius, spacing } from '@/theme';
 
 interface Props {
   label: string;
-  /** Background colour; text is white unless `textColor` is given. */
+  /** Background colour; text is `onPrimary` (navy) unless `textColor` is given. */
   color: string;
   textColor?: string;
   /** Shows a small dot before the label (used for LIVE). */
   dot?: boolean;
 }
 
-export function Badge({ label, color, textColor = '#FFFFFF', dot }: Props) {
+export function Badge({ label, color, textColor = colors.onPrimary, dot }: Props) {
   return (
     <View style={[styles.badge, { backgroundColor: color }]}>
       {dot && <View style={[styles.dot, { backgroundColor: textColor }]} />}

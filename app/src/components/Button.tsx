@@ -39,7 +39,7 @@ export function Button({ title, onPress, variant = 'primary', loading, disabled,
       {loading ? (
         <ActivityIndicator color={colors[fg]} />
       ) : (
-        <AppText style={styles.label} color={fg}>
+        <AppText variant="bodyMedium" color={fg}>
           {title}
         </AppText>
       )}
@@ -55,6 +55,5 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  label: { fontWeight: '600' },
   dim: { opacity: 0.6 },
 });

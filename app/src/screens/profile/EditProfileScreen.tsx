@@ -9,13 +9,13 @@ import { TextField } from '@/components/TextField';
 import { useSession } from '@/lib/session';
 import type { ProfileScreenProps } from '@/navigation/types';
 import { authService } from '@/services/auth';
-import { spacing } from '@/theme';
+import { instrumentColors, spacing } from '@/theme';
 import type { Instrument } from '@/types/api';
 
 const INSTRUMENTS: { value: Instrument; label: string }[] = [
-  { value: 'violin', label: '🎻 Violin' },
-  { value: 'piano', label: '🎹 Piano' },
-  { value: 'drums', label: '🥁 Drums' },
+  { value: 'violin', label: 'Violin' },
+  { value: 'piano', label: 'Piano' },
+  { value: 'drums', label: 'Drums' },
 ];
 
 export function EditProfileScreen({ navigation }: ProfileScreenProps<'EditProfile'>) {
@@ -62,12 +62,12 @@ export function EditProfileScreen({ navigation }: ProfileScreenProps<'EditProfil
       />
 
       <View style={styles.group}>
-        <AppText variant="caption" color="textSecondary" style={styles.bold}>
+        <AppText variant="label" color="textSecondary">
           Instruments you're learning
         </AppText>
         <View style={styles.chips}>
           {INSTRUMENTS.map(i => (
-            <Chip key={i.value} label={i.label} selected={instruments.includes(i.value)} onPress={() => toggle(i.value)} />
+            <Chip key={i.value} label={i.label} selected={instruments.includes(i.value)} dotColor={instrumentColors[i.value]} onPress={() => toggle(i.value)} />
           ))}
         </View>
         <AppText variant="caption" color="textSecondary">
@@ -76,7 +76,7 @@ export function EditProfileScreen({ navigation }: ProfileScreenProps<'EditProfil
       </View>
 
       <View style={styles.group}>
-        <AppText variant="caption" color="textSecondary" style={styles.bold}>
+        <AppText variant="label" color="textSecondary">
           Email and phone
         </AppText>
         <AppText color="textSecondary">
@@ -97,5 +97,4 @@ export function EditProfileScreen({ navigation }: ProfileScreenProps<'EditProfil
 const styles = StyleSheet.create({
   group: { gap: spacing.sm },
   chips: { flexDirection: 'row', gap: spacing.sm },
-  bold: { fontWeight: '600' },
 });

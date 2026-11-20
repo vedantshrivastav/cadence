@@ -1,7 +1,7 @@
-import { Pressable, StyleSheet } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
 
 import { AppText } from '@/components/AppText';
-import { radius, spacing, useColors } from '@/theme';
+import { colors, motion, radius, size, spacing } from '@/theme';
 
 interface Props {
   label: string;
@@ -9,11 +9,15 @@ interface Props {
   onPress: () => void;
   /** Stretch to share the row equally (default). Off for chips in a horizontal scroller. */
   fill?: boolean;
+  /** Optional category colour shown as a small dot before the label (e.g. an instrument). */
+  dotColor?: string;
 }
 
-/** Pill-shaped single-choice option. */
-export function Chip({ label, selected, onPress, fill = true }: Props) {
-  const colors = useColors();
+/**
+ * Single-choice option. Selection is a surface step with an accent hairline, not a solid fill,
+ * so the screen's primary action keeps the only accent fill.
+ */
+export function Chip({ label, selected, onPress, fill = true, dotColor }: Props) {
   return (
     <Pressable
       accessibilityRole="radio"
@@ -22,12 +26,11 @@ export function Chip({ label, selected, onPress, fill = true }: Props) {
       style={({ pressed }) => [
         styles.chip,
         fill && styles.fill,
-        selected
-          ? { backgroundColor: colors.primary, borderColor: colors.primary }
-          : { backgroundColor: colors.surface, borderColor: colors.border },
+        selected && styles.selected,
         pressed && styles.pressed,
       ]}>
-      <AppText style={styles.label} color={selected ? 'onPrimary' : 'text'}>
+      {dotColor ? <View style={[styles.dot, { backgroundColor: dotColor }]} /> : null}
+      <AppText variant="bodyMedium" color={selected ? 'text' : 'textSecondary'}>
         {label}
       </AppText>
     </Pressable>
@@ -37,13 +40,18 @@ export function Chip({ label, selected, onPress, fill = true }: Props) {
 const styles = StyleSheet.create({
   fill: { flex: 1 },
   chip: {
-    minHeight: 44,
+    minHeight: size.chip,
+    flexDirection: 'row',
+    gap: spacing.sm,
     alignItems: 'center',
     justifyContent: 'center',
     paddingHorizontal: spacing.md,
-    borderRadius: radius.pill,
+    borderRadius: radius.md,
     borderWidth: 1,
+    backgroundColor: colors.surface,
+    borderColor: colors.border,
   },
-  label: { fontWeight: '600' },
-  pressed: { opacity: 0.7 },
+  selected: { backgroundColor: colors.surfaceRaised, borderColor: colors.primary },
+  dot: { width: size.dot, height: size.dot, borderRadius: size.dot / 2 },
+  pressed: { opacity: motion.pressedOpacity },
 });

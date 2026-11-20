@@ -40,7 +40,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.toast,
     borderWidth: 1,
     borderColor: colors.borderStrong,
-    ...shadow.card,
+    ...shadow.float,
   },
   text: { fontWeight: '600' },
 });

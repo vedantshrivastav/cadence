@@ -25,7 +25,7 @@ interface Props extends PropsWithChildren {
 export function Backdrop({ tiled = false }: { tiled?: boolean }) {
   return (
     <View style={[StyleSheet.absoluteFill, styles.backdrop]} pointerEvents="none">
-      {tiled ? (
+      {grain.opacity === 0 ? null : tiled ? (
         <GrainTiles />
       ) : (
         <Image source={grain.source} resizeMode="repeat" style={[StyleSheet.absoluteFill, { opacity: grain.opacity }]} />

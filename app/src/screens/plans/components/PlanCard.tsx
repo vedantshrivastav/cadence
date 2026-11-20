@@ -1,16 +1,20 @@
+import { Check } from 'lucide-react-native';
 import { Pressable, StyleSheet, View } from 'react-native';
 
 import { AppText } from '@/components/AppText';
-import { Badge } from '@/components/Badge';
-import { radius, spacing, useColors } from '@/theme';
+import { Card, Stave } from '@/components/Card';
+import { Radio } from '@/components/Radio';
+import { colors, motion, size, spacing, type as typeScale } from '@/theme';
 import type { Plan } from '@/types/api';
 import { formatRupees, perClassPrice } from '@/utils/money';
 
 interface Props {
   plan: Plan;
   selected: boolean;
-  /** Shows a "Popular" tag (the 4×/week plan). */
+  /** Shows a quiet "Popular" note next to the name (the 4×/week plan). */
   highlight?: boolean;
+  /** Colour of the chosen instrument, for the note heads. */
+  noteColor?: string;
   onPress: () => void;
 }
 
@@ -22,8 +26,8 @@ function defaultFeatures(plan: Plan): string[] {
   ];
 }
 
-export function PlanCard({ plan, selected, highlight, onPress }: Props) {
-  const colors = useColors();
+/** The price is the one figure, written on the stave with one note per weekly class. */
+export function PlanCard({ plan, selected, highlight, noteColor, onPress }: Props) {
   const features = plan.features?.length ? plan.features : defaultFeatures(plan);
 
   return (
@@ -31,54 +35,55 @@ export function PlanCard({ plan, selected, highlight, onPress }: Props) {
       accessibilityRole="radio"
       accessibilityState={{ selected }}
       onPress={onPress}
-      style={({ pressed }) => [
-        styles.card,
-        {
-          backgroundColor: colors.surface,
-          borderColor: selected ? colors.primary : colors.border,
-          borderWidth: selected ? 2 : 1,
-        },
-        pressed && styles.pressed,
-      ]}>
-      <View style={styles.header}>
-        <View style={styles.flex}>
-          <AppText variant="heading">{plan.name}</AppText>
-          {plan.description ? <AppText color="textSecondary">{plan.description}</AppText> : null}
+      style={({ pressed }) => pressed && styles.pressed}>
+      <Card selected={selected}>
+        <View style={styles.header}>
+          <View style={styles.flex}>
+            <AppText variant="heading">
+              {plan.name}
+              {highlight ? (
+                <AppText variant="label" color="primary">
+                  {'  Popular'}
+                </AppText>
+              ) : null}
+            </AppText>
+            {plan.description ? <AppText color="textSecondary">{plan.description}</AppText> : null}
+          </View>
+          <Radio selected={selected} />
         </View>
-        <View style={[styles.radio, { borderColor: selected ? colors.primary : colors.border }]}>
-          {selected && <View style={[styles.radioDot, { backgroundColor: colors.primary }]} />}
+
+        <View style={styles.priceRow}>
+          <AppText variant="title">{formatRupees(plan.pricePaise)}</AppText>
+          <Stave notes={plan.classesPerWeek} noteColor={noteColor} />
         </View>
-      </View>
+        <AppText variant="caption" color="textSecondary">
+          {plan.durationDays} days · about {perClassPrice(plan.pricePaise, plan.classesPerWeek, plan.durationDays)} per
+          class
+        </AppText>
 
-      {highlight && <Badge label="POPULAR" color={colors.primary} textColor={colors.onPrimary} />}
-
-      <View style={styles.priceRow}>
-        <AppText variant="title">{formatRupees(plan.pricePaise)}</AppText>
-        <AppText color="textSecondary"> / {plan.durationDays} days</AppText>
-      </View>
-      <AppText variant="caption" color="textSecondary">
-        About {perClassPrice(plan.pricePaise, plan.classesPerWeek, plan.durationDays)} per class
-      </AppText>
-
-      <View style={styles.features}>
-        {features.map(f => (
-          <AppText key={f}>
-            <AppText color="success">✓ </AppText>
-            {f}
-          </AppText>
-        ))}
-      </View>
+        <View style={styles.features}>
+          {features.map(f => (
+            <View key={f} style={styles.feature}>
+              <Check color={colors.muted} size={size.iconSmall} strokeWidth={1.75} style={styles.featureIcon} />
+              <AppText color="textSecondary" style={styles.flex}>
+                {f}
+              </AppText>
+            </View>
+          ))}
+        </View>
+      </Card>
     </Pressable>
   );
 }
 
 const styles = StyleSheet.create({
-  card: { borderRadius: radius.lg, padding: spacing.md, gap: spacing.sm },
   header: { flexDirection: 'row', alignItems: 'flex-start', gap: spacing.md },
   flex: { flex: 1 },
-  radio: { width: 22, height: 22, borderRadius: 11, borderWidth: 2, alignItems: 'center', justifyContent: 'center' },
-  radioDot: { width: 10, height: 10, borderRadius: 5 },
-  priceRow: { flexDirection: 'row', alignItems: 'baseline' },
-  features: { gap: spacing.xs },
-  pressed: { opacity: 0.8 },
+  // name → price 8 (card gap), price → stave 16.
+  priceRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.md, marginTop: spacing.xs },
+  features: { gap: spacing.xs, marginTop: spacing.xs },
+  feature: { flexDirection: 'row', gap: spacing.sm },
+  // Centres the icon on the first line of body text.
+  featureIcon: { marginTop: (typeScale.body.lineHeight - size.iconSmall) / 2 },
+  pressed: { transform: [{ scale: motion.pressScale }] },
 });

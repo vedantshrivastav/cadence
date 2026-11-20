@@ -2,6 +2,7 @@ import { Pressable, StyleSheet } from 'react-native';
 
 import { AppText } from '@/components/AppText';
 import { Card } from '@/components/Card';
+import { motion } from '@/theme';
 import type { Announcement } from '@/types/api';
 import { formatDate } from '@/utils/time';
 
@@ -10,10 +11,10 @@ export function AnnouncementPreview({ item, onPress }: { item: Announcement; onP
   return (
     <Pressable onPress={onPress} accessibilityRole="button" style={({ pressed }) => pressed && styles.pressed}>
       <Card variant="quiet">
-        <AppText style={styles.title} numberOfLines={1}>
+        <AppText variant="bodyMedium" numberOfLines={1}>
           {item.title}
         </AppText>
-        <AppText color="muted" numberOfLines={2}>
+        <AppText color="textSecondary" numberOfLines={2}>
           {item.body}
         </AppText>
         <AppText variant="caption" color="muted">
@@ -25,6 +26,5 @@ export function AnnouncementPreview({ item, onPress }: { item: Announcement; onP
 }
 
 const styles = StyleSheet.create({
-  title: { fontWeight: '600' },
-  pressed: { opacity: 0.7 },
+  pressed: { opacity: motion.pressedOpacity },
 });

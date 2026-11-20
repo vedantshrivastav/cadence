@@ -12,16 +12,14 @@ import HapticFeedback from 'react-native-haptic-feedback';
 
 import { AppText } from '@/components/AppText';
 import { MeetLogo } from '@/components/MeetLogo';
-import { Card } from '@/components/Card';
+import { Card, Stave } from '@/components/Card';
 import {
   colors,
-  fonts,
-  fontSize,
+  instrumentColors,
   motion,
   radius,
   size,
   spacing,
-  type as typeScale,
 } from '@/theme';
 import type { MyClass } from '@/types/api';
 import {
@@ -30,13 +28,6 @@ import {
   JOIN_OPENS_BEFORE_MS,
   MS,
 } from '@/utils/time';
-
-/** Disabled Join on the accent: faint ink wash, ink label at ~65% (readable, clearly inactive). */
-const JOIN_DISABLED_BG = 'rgba(28,24,21,0.14)';
-const JOIN_DISABLED_TEXT_OPACITY = 0.65;
-
-/** Hero padding is 24 in Card; this card wants 20, so its content pulls out by the difference. */
-const PADDING_TRIM = 20 - 24;
 
 /** "in 2 days" from 24h on; "in 5h 20m" / "in 20m" below that. */
 function countdown(ms: number): string {
@@ -57,7 +48,10 @@ interface Props {
   onCopied: () => void;
 }
 
-/** Hero: the next class. The start time is the one big number. */
+/**
+ * The next class. The start time is the one big figure, written on the stave with the
+ * instrument as its note head. The off-white Join button is the brightest thing on Home.
+ */
 export function NextClassCard({ cls, now, joining, onJoin, onCopied }: Props) {
   const start = cls.nextClassAt ? new Date(cls.nextClassAt) : null;
   const end = start
@@ -68,12 +62,13 @@ export function NextClassCard({ cls, now, joining, onJoin, onCopied }: Props) {
   // const canJoin = isLive || msToStart <= JOIN_OPENS_BEFORE_MS;
   const canJoin = true;
 
-  // ----- Entrance: fade + rise -----
+  // ----- Entrance: one fade + rise -----
   const enter = useRef(new Animated.Value(0)).current;
   useEffect(() => {
     Animated.timing(enter, {
       toValue: 1,
       duration: motion.slow,
+      easing: motion.easing,
       useNativeDriver: true,
     }).start();
   }, [enter]);
@@ -116,97 +111,95 @@ export function NextClassCard({ cls, now, joining, onJoin, onCopied }: Props) {
         ],
       }}
     >
-      <Card variant="hero" fill="flat">
-        {/* One child so the card's own gap doesn't apply; all spacing is set here. */}
-        <View style={styles.body}>
-          <View>
-            {/* When, relative to now */}
-            <View style={styles.meta}>
-              {isLive ? <View style={styles.liveDot} /> : null}
-              <AppText
-                variant="label"
-                color="onPrimary"
-                style={[styles.metaText, styles.dim]}
-                numberOfLines={1}
-              >
-                {isLive
-                  ? `Live now · ends ${endTime}`
-                  : `${day} · ${countdown(msToStart)}`}
+      <Card variant="feature">
+        <View>
+          {/* When, relative to now */}
+          <View style={styles.meta}>
+            {isLive ? <View style={styles.liveDot} /> : null}
+            <AppText
+              variant="label"
+              color="text"
+              style={styles.metaText}
+              numberOfLines={1}
+            >
+              {isLive
+                ? `Live now · ends ${endTime}`
+                : `${day} · ${countdown(msToStart)}`}
+            </AppText>
+          </View>
+
+          {/* The start time on the stave */}
+          <View style={styles.timeRow}>
+            <AppText variant="heroTime">{time}</AppText>
+            <Stave noteColor={instrumentColors[cls.instrument]} />
+          </View>
+
+          <AppText variant="bodyMedium" numberOfLines={1}>
+            {cls.title}
+            {cls.teacherName ? (
+              <AppText variant="body" color="textSecondary">
+                {` with ${cls.teacherName}`}
+              </AppText>
+            ) : null}
+          </AppText>
+        </View>
+
+        <View style={styles.actions}>
+          {canJoin ? (
+            <Pressable
+              onPress={onJoin}
+              disabled={joining}
+              accessibilityRole="button"
+              accessibilityLabel="Join on Google Meet"
+              accessibilityState={{ busy: joining }}
+              style={({ pressed }) => [
+                styles.control,
+                styles.join,
+                pressed && styles.pressed,
+              ]}
+            >
+              {joining ? (
+                <ActivityIndicator color={colors.onPrimary} />
+              ) : (
+                <>
+                  <MeetLogo size={size.icon} color={colors.onPrimary} />
+                  <AppText variant="bodyMedium" color="onPrimary">
+                    Join on Google Meet
+                  </AppText>
+                </>
+              )}
+            </Pressable>
+          ) : (
+            <View
+              accessible
+              accessibilityRole="button"
+              accessibilityState={{ disabled: true }}
+              style={[styles.control, styles.join, styles.joinDisabled]}
+            >
+              <AppText variant="bodyMedium" color="muted">
+                {`Join opens at ${formatHHmm(opensAtIst)}`}
               </AppText>
             </View>
-
-            {/* The start time is the one big number */}
-            <AppText
-              style={[typeScale.heroTime, styles.time]}
-              color="onPrimary"
-            >
-              {time}
-            </AppText>
-
-            <AppText color="onPrimary" style={styles.title} numberOfLines={1}>
-              {cls.title}
-              {cls.teacherName ? (
-                <AppText
-                  color="onPrimary"
-                  style={styles.dim}
-                >{` with ${cls.teacherName}`}</AppText>
-              ) : null}
-            </AppText>
-          </View>
-
-          <View style={styles.actions}>
-            {canJoin ? (
-              <Pressable
-                onPress={onJoin}
-                disabled={joining}
-                accessibilityRole="button"
-                accessibilityLabel="Join on Google Meet"
-                accessibilityState={{ busy: joining }}
-                style={({ pressed }) => [
-                  styles.join,
-                  styles.joinActive,
-                  pressed && styles.pressed,
-                ]}
-              >
-                {joining ? (
-                  <ActivityIndicator color={colors.primary} />
-                ) : (
-                  <>
-                    <MeetLogo size={20} />
-                    <AppText color="primary" style={styles.joinText}>
-                      Join on Google Meet
-                    </AppText>
-                  </>
-                )}
-              </Pressable>
-            ) : (
-              <View
-                accessible
-                accessibilityRole="button"
-                accessibilityState={{ disabled: true }}
-                style={[styles.join, styles.joinDisabled]}
-              >
-                <AppText color="onPrimary" style={styles.joinDisabledText}>
-                  {`Join opens at ${formatHHmm(opensAtIst)}`}
-                </AppText>
-              </View>
-            )}
-            <Pressable
-              onPress={copyLink}
-              accessibilityRole="button"
-              accessibilityLabel={
-                copied ? 'Meet link copied' : 'Copy Google Meet link'
-              }
-              hitSlop={spacing.xs}
-              style={({ pressed }) => [styles.copy, pressed && styles.pressed]}
-            >
-              <CopyIcon
-                color={colors.onPrimary}
-                size={size.icon}
-                strokeWidth={2}
-              />
-            </Pressable>
-          </View>
+          )}
+          <Pressable
+            onPress={copyLink}
+            accessibilityRole="button"
+            accessibilityLabel={
+              copied ? 'Meet link copied' : 'Copy Google Meet link'
+            }
+            hitSlop={spacing.xs}
+            style={({ pressed }) => [
+              styles.control,
+              styles.copy,
+              pressed && styles.pressed,
+            ]}
+          >
+            <CopyIcon
+              color={copied ? colors.text : colors.muted}
+              size={size.icon}
+              strokeWidth={1.75}
+            />
+          </Pressable>
         </View>
       </Card>
     </Animated.View>
@@ -214,62 +207,47 @@ export function NextClassCard({ cls, now, joining, onJoin, onCopied }: Props) {
 }
 
 const styles = StyleSheet.create({
-  // 20px on all sides; text block → buttons 20.
-  body: { margin: PADDING_TRIM, gap: 20 },
   meta: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
-  metaText: { fontVariant: ['tabular-nums'], flexShrink: 1 },
+  metaText: { flexShrink: 1 },
   liveDot: {
-    width: spacing.sm,
-    height: spacing.sm,
-    borderRadius: spacing.xs,
-    backgroundColor: colors.onPrimary,
+    width: size.dot,
+    height: size.dot,
+    borderRadius: size.dot / 2,
+    backgroundColor: colors.primary,
   },
-  // label → time 4; line-height ~1.05 so the display face adds no extra space.
-  time: {
-    marginTop: spacing.xs,
-    lineHeight: Math.round(fontSize.hero * 1.05),
-    includeFontPadding: false,
-    fontVariant: ['tabular-nums'],
-  },
-  // time → class name 8.
-  title: { marginTop: spacing.sm, fontFamily: fonts.bodyMedium },
-  dim: { opacity: 0.75 },
-  actions: { flexDirection: 'row', gap: spacing.sm },
-  join: { flex: 1, height: size.control, minHeight: size.control },
-  // Ink fill with a 1px warm top highlight, echoing the card's own edge.
-  joinActive: {
+  // meta → time 8, time → class name 4.
+  timeRow: {
     flexDirection: 'row',
-    gap: spacing.sm + 2,
+    alignItems: 'center',
+    gap: spacing.md,
+    marginTop: spacing.sm,
+    marginBottom: spacing.xs,
+  },
+  actions: { flexDirection: 'row', gap: spacing.sm },
+  control: {
+    height: size.controlFeature,
     borderRadius: radius.md,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: colors.onPrimary,
-    borderTopWidth: 1,
-    borderTopColor: 'rgba(255,235,210,0.12)',
   },
-  joinText: {
-    fontFamily: fonts.bodyMedium,
-    fontWeight: '600',
-    letterSpacing: 0.2,
+  join: {
+    flex: 1,
+    flexDirection: 'row',
+    gap: spacing.sm,
+    paddingHorizontal: spacing.md,
+    backgroundColor: colors.primary,
   },
+  // Quiet secondary controls on the raised card: no fill, a 1px slate outline.
   joinDisabled: {
-    borderRadius: radius.md,
-    paddingHorizontal: spacing.lg,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: JOIN_DISABLED_BG,
-  },
-  joinDisabledText: {
-    fontWeight: '600',
-    opacity: JOIN_DISABLED_TEXT_OPACITY,
+    backgroundColor: 'transparent',
+    borderWidth: 1,
+    borderColor: colors.borderStrong,
   },
   copy: {
-    width: size.iconButton,
-    height: size.iconButton,
-    borderRadius: radius.md,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: colors.onPrimarySubtle,
+    width: size.controlFeature,
+    backgroundColor: 'transparent',
+    borderWidth: 1,
+    borderColor: colors.borderStrong,
   },
-  pressed: { opacity: 0.7 },
+  pressed: { transform: [{ scale: motion.pressScale }] },
 });

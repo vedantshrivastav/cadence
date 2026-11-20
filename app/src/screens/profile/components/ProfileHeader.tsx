@@ -1,59 +1,61 @@
+import { BadgeCheck } from 'lucide-react-native';
 import { StyleSheet, View } from 'react-native';
 
 import { AppText } from '@/components/AppText';
 import { Avatar } from '@/components/Avatar';
-import { Badge } from '@/components/Badge';
 import { Button } from '@/components/Button';
 import { Card } from '@/components/Card';
-import { spacing, useColors } from '@/theme';
+import { colors, instrumentColors, size, spacing } from '@/theme';
 import type { User } from '@/types/api';
 import { capitalize } from '@/utils/text';
 
-export function ProfileHeader({
-  user,
-  onEdit,
-}: {
-  user: User;
-  onEdit: () => void;
-}) {
-  const colors = useColors();
+const AVATAR = 64;
+
+export function ProfileHeader({ user, onEdit }: { user: User; onEdit: () => void }) {
   return (
     <Card>
       <View style={styles.row}>
-        <Avatar name={user.name} url={user.avatarUrl} size={64} />
+        <Avatar name={user.name} url={user.avatarUrl} size={AVATAR} />
         <View style={styles.flex}>
           <AppText variant="heading" numberOfLines={1}>
             {user.name}
+            {user.role === 'admin' ? (
+              <AppText variant="label" color="primary">
+                {'  Admin'}
+              </AppText>
+            ) : null}
           </AppText>
           <AppText color="textSecondary" numberOfLines={1}>
             {user.email}
           </AppText>
-          <AppText color="textSecondary">
-            {user.phone ? `+91 ${user.phone}` : 'Phone not added'}
+          <View style={styles.line}>
+            <AppText variant="figure" color="textSecondary">
+              {user.phone ? `+91 ${user.phone}` : 'Phone not added'}
+            </AppText>
             {user.phoneVerified && (
-              <AppText color="success"> ✓ Verified</AppText>
+              <BadgeCheck
+                color={colors.success}
+                size={size.iconSmall}
+                strokeWidth={1.75}
+                accessibilityLabel="Verified"
+              />
             )}
-          </AppText>
+          </View>
         </View>
       </View>
 
-      <View style={styles.tags}>
-        {user.role === 'admin' && (
-          <Badge
-            label="ADMIN"
-            color={colors.primary}
-            textColor={colors.onPrimary}
-          />
-        )}
-        {user.instruments.map(i => (
-          <Badge
-            key={i}
-            label={capitalize(i).toUpperCase()}
-            color={colors.border}
-            textColor={colors.text}
-          />
-        ))}
-      </View>
+      {user.instruments.length > 0 && (
+        <View style={styles.instruments}>
+          {user.instruments.map(i => (
+            <View key={i} style={styles.line}>
+              <View style={[styles.dot, { backgroundColor: instrumentColors[i] }]} />
+              <AppText variant="label" color="textSecondary">
+                {capitalize(i)}
+              </AppText>
+            </View>
+          ))}
+        </View>
+      )}
 
       <Button title="Edit profile" variant="secondary" onPress={onEdit} />
     </Card>
@@ -62,6 +64,9 @@ export function ProfileHeader({
 
 const styles = StyleSheet.create({
   row: { flexDirection: 'row', alignItems: 'center', gap: spacing.md },
-  flex: { flex: 1, gap: 2 },
-  tags: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.xs },
+  flex: { flex: 1 },
+  line: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
+  // Instruments line up under the name column.
+  instruments: { flexDirection: 'row', flexWrap: 'wrap', columnGap: spacing.md, rowGap: spacing.xs, marginLeft: AVATAR + spacing.md },
+  dot: { width: size.dot, height: size.dot, borderRadius: size.dot / 2 },
 });

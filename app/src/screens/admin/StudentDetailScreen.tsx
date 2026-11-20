@@ -137,7 +137,7 @@ export function StudentDetailScreen({ route }: AdminScreenProps<'StudentDetail'>
                 <Badge
                   label={sub.isActive ? 'ACTIVE' : sub.status === 'cancelled' ? 'CANCELLED' : 'EXPIRED'}
                   color={sub.isActive ? colors.success : colors.border}
-                  textColor={sub.isActive ? '#FFFFFF' : colors.text}
+                  textColor={sub.isActive ? colors.onPrimary : colors.text}
                 />
               </View>
               <AppText color="textSecondary">

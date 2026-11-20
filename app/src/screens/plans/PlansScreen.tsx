@@ -13,7 +13,7 @@ import { useSession } from '@/lib/session';
 import type { PlansScreenProps } from '@/navigation/types';
 import { classesService } from '@/services/classes';
 import { paymentsService } from '@/services/payments';
-import { spacing, useColors } from '@/theme';
+import { instrumentColors, spacing, useColors } from '@/theme';
 import type { Batch, Instrument } from '@/types/api';
 import { formatRupees } from '@/utils/money';
 import { capitalize } from '@/utils/text';
@@ -24,9 +24,9 @@ import { CheckoutBar } from './components/CheckoutBar';
 import { PlanCard } from './components/PlanCard';
 
 const INSTRUMENTS: { value: Instrument; label: string }[] = [
-  { value: 'violin', label: '🎻 Violin' },
-  { value: 'piano', label: '🎹 Piano' },
-  { value: 'drums', label: '🥁 Drums' },
+  { value: 'violin', label: 'Violin' },
+  { value: 'piano', label: 'Piano' },
+  { value: 'drums', label: 'Drums' },
 ];
 
 type PayStage = 'idle' | 'creating' | 'checkout' | 'verifying';
@@ -188,7 +188,7 @@ export function PlansScreen({ navigation }: PlansScreenProps<'Plans'>) {
       }>
       <View>
         <AppText variant="title">Choose your plan</AppText>
-        <AppText color="textSecondary">Live online classes with Cadence teachers on Google Meet.</AppText>
+        <AppText color="textSecondary">Live online classes with Cadence teachers on Google Meet</AppText>
       </View>
 
       {/* 1. Instrument */}
@@ -199,15 +199,16 @@ export function PlansScreen({ navigation }: PlansScreenProps<'Plans'>) {
               key={i.value}
               label={i.label}
               selected={instrument === i.value}
+              dotColor={instrumentColors[i.value]}
               onPress={() => !busy && setInstrument(i.value)}
             />
           ))}
         </View>
         {activeSub && (
           <Card>
-            <AppText>
+            <AppText color="textSecondary">
               You're subscribed to {capitalize(activeSub.instrument)} until{' '}
-              <AppText style={styles.bold}>{formatDate(new Date(activeSub.endDate))}</AppText>. Paying now adds
+              <AppText variant="bodyMedium">{formatDate(new Date(activeSub.endDate))}</AppText>. Paying now adds
               {plan ? ` ${plan.durationDays}` : ''} days on top — you won't lose any remaining days.
             </AppText>
           </Card>
@@ -225,6 +226,7 @@ export function PlansScreen({ navigation }: PlansScreenProps<'Plans'>) {
               plan={p}
               selected={p._id === planId}
               highlight={p.classesPerWeek === 4}
+              noteColor={instrument ? instrumentColors[instrument] : undefined}
               onPress={() => !busy && setPlanId(p._id)}
             />
           ))
@@ -243,7 +245,7 @@ export function PlansScreen({ navigation }: PlansScreenProps<'Plans'>) {
             <ActivityIndicator color={colors.primary} />
           ) : batches.length === 0 ? (
             <Card>
-              <AppText>
+              <AppText color="textSecondary">
                 No {capitalize(instrument)} batches for {plan.classesPerWeek} classes/week are open yet. You can still
                 subscribe — the academy will assign your timing and it will show up on Home.
               </AppText>
@@ -259,8 +261,8 @@ export function PlansScreen({ navigation }: PlansScreenProps<'Plans'>) {
               />
             ))
           )}
-          <AppText variant="caption" color="textSecondary">
-            All timings are in IST.
+          <AppText variant="caption" color="muted">
+            All timings are in IST
           </AppText>
         </Step>
       )}
@@ -271,9 +273,12 @@ export function PlansScreen({ navigation }: PlansScreenProps<'Plans'>) {
 function Step({ number, title, children }: { number: number; title: string; children: React.ReactNode }) {
   return (
     <View style={styles.step}>
-      <AppText variant="heading">
-        {number}. {title}
-      </AppText>
+      <View style={styles.stepTitle}>
+        <AppText variant="figure" color="muted">
+          {number}
+        </AppText>
+        <AppText variant="heading">{title}</AppText>
+      </View>
       {children}
     </View>
   );
@@ -283,7 +288,8 @@ const styles = StyleSheet.create({
   center: { flex: 1, alignItems: 'center', justifyContent: 'center' },
   centerGap: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: spacing.md },
   textCenter: { textAlign: 'center' },
-  bold: { fontWeight: '600' },
-  step: { gap: spacing.sm },
+  // Title → its options 12, between options 12 (same as Home's sections and cards).
+  step: { gap: spacing.cardGap },
+  stepTitle: { flexDirection: 'row', alignItems: 'baseline', gap: spacing.sm },
   chips: { flexDirection: 'row', gap: spacing.sm },
 });

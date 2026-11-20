@@ -101,13 +101,13 @@ function Practice({ items, locked, onViewPlans }: { items: Resource[]; locked: b
   if (locked) {
     return (
       <Card variant="hero">
-        <AppText variant="heading" color="onPrimary">
+        <AppText variant="heading">
           Practice material is for subscribers 🔒
         </AppText>
-        <AppText color="onPrimary">
+        <AppText color="muted">
           Get sheet music, practice videos and recordings of your classes when you subscribe.
         </AppText>
-        <Button title="View plans" variant="inverse" onPress={onViewPlans} />
+        <Button title="View plans" onPress={onViewPlans} />
       </Card>
     );
   }

@@ -10,7 +10,6 @@ import {
   ActivityIndicator,
   Alert,
   Linking,
-  Pressable,
   StyleSheet,
   View,
 } from 'react-native';
@@ -20,6 +19,7 @@ import { Avatar } from '@/components/Avatar';
 import { Button } from '@/components/Button';
 import { Card } from '@/components/Card';
 import { Screen } from '@/components/Screen';
+import { Section } from '@/components/Section';
 import { SubscriptionCard } from '@/components/SubscriptionCard';
 import { Toast } from '@/components/Toast';
 import { useApi } from '@/hooks/useApi';
@@ -28,8 +28,7 @@ import { useSession } from '@/lib/session';
 import { classesService } from '@/services/classes';
 import { contentService } from '@/services/content';
 import { motion, spacing, useColors } from '@/theme';
-import { firstName } from '@/utils/text';
-import { formatDate, greeting, MS } from '@/utils/time';
+import { formatDate, MS } from '@/utils/time';
 
 import { AnnouncementPreview } from './components/AnnouncementPreview';
 import { NextClassCard } from './components/NextClassCard';
@@ -51,7 +50,7 @@ async function loadHome() {
 export function HomeScreen() {
   const navigation = useNavigation();
   const colors = useColors();
-  const { user, subscriptions: sessionSubs } = useSession();
+  const { subscriptions: sessionSubs } = useSession();
   const now = useNow(30_000);
   const { data, error, loading, refreshing, refresh, reload } =
     useApi(loadHome);
@@ -173,28 +172,19 @@ export function HomeScreen() {
 
   return (
     <Screen
-      tiledGrain
       onRefresh={refresh}
       refreshing={refreshing}
       edges={['top', 'left', 'right']}
       footer={<Toast message={toast} />}
     >
-      {/* Header: app name, then date + greeting, all on the screen's 20px side padding */}
+      {/* Header: wordmark and today's date on one line */}
       <View style={styles.header}>
-        <AppText variant="heading">Cadence</AppText>
-        <View>
-          <AppText variant="caption" color="muted">
-            {formatDate(now)}
-          </AppText>
-          <AppText variant="title" numberOfLines={1}>
-            {greeting(now)}, {firstName(user?.name)}
-          </AppText>
-        </View>
-        {/* <Avatar
-          name={user?.name ?? ''}
-          url={user?.avatarUrl}
-          onPress={goToProfile}
-        /> */}
+        <AppText variant="heading" style={styles.flex}>
+          Cadence
+        </AppText>
+        <AppText variant="label" color="muted">
+          {formatDate(now)}
+        </AppText>
       </View>
 
       {!hasSubscription ? (
@@ -212,7 +202,7 @@ export function HomeScreen() {
             />
           ) : (
             <Card variant="quiet">
-              <AppText style={styles.bold}>No classes scheduled yet</AppText>
+              <AppText variant="bodyMedium">No classes scheduled yet</AppText>
               <AppText color="textSecondary">
                 Your class timings will appear here once the academy assigns
                 your batch.
@@ -269,38 +259,6 @@ export function HomeScreen() {
   );
 }
 
-function Section({
-  title,
-  action,
-  children,
-}: {
-  title: string;
-  action?: { label: string; onPress: () => void };
-  children: React.ReactNode;
-}) {
-  return (
-    <View style={styles.section}>
-      <View style={styles.sectionHeader}>
-        <AppText variant="label" color="muted" style={styles.flex}>
-          {title}
-        </AppText>
-        {action && (
-          <Pressable
-            onPress={action.onPress}
-            hitSlop={8}
-            accessibilityRole="button"
-          >
-            <AppText color="primary" style={styles.bold}>
-              {action.label}
-            </AppText>
-          </Pressable>
-        )}
-      </View>
-      <View style={styles.sectionBody}>{children}</View>
-    </View>
-  );
-}
-
 const styles = StyleSheet.create({
   center: { flex: 1, alignItems: 'center', justifyContent: 'center' },
   centerGap: {
@@ -310,15 +268,6 @@ const styles = StyleSheet.create({
     gap: spacing.md,
   },
   textCenter: { textAlign: 'center' },
-  bold: { fontWeight: '600' },
-  section: { gap: spacing.sectionHeader },
-  sectionBody: { gap: spacing.cardGap },
-  sectionHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.sm,
-  },
-  // App name → date: 24.
-  header: { gap: spacing.lg },
+  header: { flexDirection: 'row', alignItems: 'baseline', gap: spacing.sm },
   flex: { flex: 1 },
 });

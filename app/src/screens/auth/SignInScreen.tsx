@@ -31,7 +31,9 @@ export function SignInScreen() {
       await signIn(await authService.googleLogin(idToken));
     } catch (e) {
       if (!(e instanceof GoogleSignInCancelled)) {
-        setError(e instanceof Error ? e.message : 'Sign-in failed. Please try again.');
+        setError(
+          e instanceof Error ? e.message : 'Sign-in failed. Please try again.',
+        );
       }
     } finally {
       setLoading(false);
@@ -41,11 +43,6 @@ export function SignInScreen() {
   return (
     <Screen edges={['top', 'bottom', 'left', 'right']}>
       <View style={styles.hero}>
-        <View style={[styles.logo, { backgroundColor: colors.primary }]}>
-          <AppText style={styles.logoText} color="onPrimary">
-            🎵
-          </AppText>
-        </View>
         <AppText variant="title" style={styles.textCenter}>
           Cadence Music Academy
         </AppText>
@@ -56,7 +53,10 @@ export function SignInScreen() {
 
       <View style={styles.highlights}>
         {HIGHLIGHTS.map(h => (
-          <View key={h.text} style={[styles.highlight, { backgroundColor: colors.surface }]}>
+          <View
+            key={h.text}
+            style={[styles.highlight, { backgroundColor: colors.surface }]}
+          >
             <AppText style={styles.icon}>{h.icon}</AppText>
             <AppText style={styles.flex}>{h.text}</AppText>
           </View>
@@ -64,15 +64,23 @@ export function SignInScreen() {
       </View>
 
       <View style={styles.actions}>
-        <Button title="Continue with Google" onPress={continueWithGoogle} loading={loading} />
+        <Button
+          title="Continue with Google"
+          onPress={continueWithGoogle}
+          loading={loading}
+        />
         {error && (
           <AppText color="danger" style={styles.textCenter}>
             {error}
           </AppText>
         )}
-        <AppText variant="caption" color="textSecondary" style={styles.textCenter}>
-          Already a student of the academy? Sign in and verify the phone number you gave us — your classes will be
-          added automatically.
+        <AppText
+          variant="caption"
+          color="textSecondary"
+          style={styles.textCenter}
+        >
+          Already a student of the academy? Sign in and verify the phone number
+          you gave us — your classes will be added automatically.
         </AppText>
       </View>
 
@@ -82,12 +90,29 @@ export function SignInScreen() {
 }
 
 const styles = StyleSheet.create({
-  hero: { alignItems: 'center', gap: spacing.sm, paddingTop: spacing.xl, paddingBottom: spacing.md },
-  logo: { width: 80, height: 80, borderRadius: radius.lg, alignItems: 'center', justifyContent: 'center' },
+  hero: {
+    alignItems: 'center',
+    gap: spacing.sm,
+    paddingTop: spacing.xl,
+    paddingBottom: spacing.md,
+  },
+  logo: {
+    width: 80,
+    height: 80,
+    borderRadius: radius.lg,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   logoText: { fontSize: 40, lineHeight: 48 },
   textCenter: { textAlign: 'center' },
   highlights: { gap: spacing.sm },
-  highlight: { flexDirection: 'row', alignItems: 'center', gap: spacing.md, padding: spacing.md, borderRadius: radius.md },
+  highlight: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.md,
+    padding: spacing.md,
+    borderRadius: radius.md,
+  },
   icon: { fontSize: 22, lineHeight: 28 },
   flex: { flex: 1 },
   actions: { gap: spacing.sm, paddingTop: spacing.md },

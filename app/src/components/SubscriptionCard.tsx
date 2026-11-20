@@ -3,7 +3,7 @@ import { StyleSheet, View } from 'react-native';
 import { AppText } from '@/components/AppText';
 import { Button } from '@/components/Button';
 import { Card } from '@/components/Card';
-import { colors, instrumentColors, radius, spacing } from '@/theme';
+import { colors, instrumentColors, radius, size, spacing } from '@/theme';
 import type { Subscription } from '@/types/api';
 import { capitalize } from '@/utils/text';
 import { daysLeft, formatDate, MS } from '@/utils/time';
@@ -29,7 +29,7 @@ export function SubscriptionCard({ sub, now, onRenew }: Props) {
     <Card>
       <View style={styles.row}>
         <View style={[styles.dot, { backgroundColor: instrumentColors[sub.instrument] }]} />
-        <AppText style={styles.flex} numberOfLines={1}>
+        <AppText variant="bodyMedium" style={styles.flex} numberOfLines={1}>
           {capitalize(sub.instrument)} · {sub.classesPerWeek} classes a week
         </AppText>
       </View>
@@ -66,7 +66,7 @@ const styles = StyleSheet.create({
   row: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
   numberRow: { flexDirection: 'row', alignItems: 'baseline', gap: spacing.sm },
   flex: { flex: 1 },
-  dot: { width: 8, height: 8, borderRadius: 4 },
-  track: { height: 4, borderRadius: radius.pill, overflow: 'hidden', backgroundColor: colors.border },
+  dot: { width: size.dot, height: size.dot, borderRadius: size.dot / 2 },
+  track: { height: size.track, borderRadius: radius.pill, overflow: 'hidden', backgroundColor: colors.track },
   fill: { height: '100%', borderRadius: radius.pill },
 });

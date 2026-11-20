@@ -1,75 +1,68 @@
-import { useId, type PropsWithChildren } from 'react';
-import { Image, StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
-import Svg, { Defs, LinearGradient, RadialGradient, Rect, Stop } from 'react-native-svg';
+import type { PropsWithChildren } from 'react';
+import { StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
 
-import { colors, grain, heroSurface, radius, shadow, spacing } from '@/theme';
+import { colors, radius, shadow, spacing, stave } from '@/theme';
 
-export type CardVariant = 'default' | 'hero' | 'quiet';
+export type CardVariant = 'default' | 'feature' | 'quiet' | 'hero';
 
 interface Props extends PropsWithChildren {
   /**
-   * default = flat surface panel · hero = the one card that matters most on a screen (accent) ·
-   * quiet = outline only, for secondary info.
+   * default = flat surface panel ·
+   * feature = the one card that matters most on a screen: raised surface, its primary action is the brightest element ·
+   * quiet = outline only, for secondary info ·
+   * hero = raised surface for a marketing/locked message (same look as feature, default gap). No gradient, no glow.
    */
   variant?: CardVariant;
-  /** Hero only. `flat` = plain accent fill (no tonal gradient or soft highlight); grain and top edge stay. */
-  fill?: 'gradient' | 'flat';
+  /** For a list of rows that carry their own touch height: side padding only, no gap. */
+  list?: boolean;
+  /** Chosen option in a single-choice list: accent hairline, same width so nothing shifts. */
+  selected?: boolean;
   style?: StyleProp<ViewStyle>;
 }
 
-/** The only card in the app: one border, one radius, one padding per variant. */
-export function Card({ variant = 'default', fill = 'gradient', style, children }: Props) {
-  if (variant !== 'hero') {
-    return <View style={[styles.base, styles[variant], style]}>{children}</View>;
-  }
-  // Hero: the glow sits on the outer view; the inner view clips the fill layers to the radius.
+/** The only card in the app: one radius, one padding, depth from surface steps and hairlines. */
+export function Card({ variant = 'default', list = false, selected = false, style, children }: Props) {
   return (
-    <View style={[styles.heroOuter, style]}>
-      <View style={[styles.base, styles.hero]}>
-        <HeroFill flat={fill === 'flat'} />
-        {children}
-      </View>
+    <View style={[styles.base, styles[variant], list && styles.list, selected && styles.selected, style]}>{children}</View>
+  );
+}
+
+/**
+ * The Cadence signature: five stave lines with note heads in the instrument's colour.
+ * One note sits on the middle line; several (one per weekly class) step through `stave.melody`.
+ * Fills the width it is given; place it beside a large figure in a row.
+ */
+export function Stave({
+  noteColor = stave.noteNeutral,
+  notes = 1,
+  noteColors,
+}: {
+  noteColor?: string;
+  notes?: number;
+  /** One colour per note (e.g. each attended class's instrument); overrides `notes` and `noteColor`. */
+  noteColors?: string[];
+}) {
+  const count = Math.min(noteColors?.length ?? notes, stave.maxNotes);
+  return (
+    <View style={styles.stave} pointerEvents="none" accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
+      {Array.from({ length: stave.lines }, (_, i) => (
+        <View key={i} style={styles.staveLine} />
+      ))}
+      {Array.from({ length: count }, (_, i) => {
+        const at = count === 1 && !noteColors ? stave.noteAt : (i + 0.5) / count;
+        const lift = count === 1 && !noteColors ? 0 : (stave.melody[i % stave.melody.length] * stave.gap) / 2;
+        return (
+          <View
+            key={`n${i}`}
+            style={[styles.note, { left: `${at * 100}%`, marginTop: -lift, backgroundColor: noteColors?.[i] ?? noteColor }]}
+          />
+        );
+      })}
     </View>
   );
 }
 
-/** Tonal gradient + soft top-left highlight + 1px top edge highlight + faint grain. */
-function HeroFill({ flat }: { flat: boolean }) {
-  const id = useId().replace(/:/g, '');
-  // CSS-style angle → gradient vector in the unit box (0° points up, clockwise).
-  const a = (heroSurface.angleDeg * Math.PI) / 180;
-  const dx = Math.sin(a) / 2;
-  const dy = -Math.cos(a) / 2;
-  const [c1, c2, c3] = heroSurface.gradient;
-
-  return (
-    <View style={StyleSheet.absoluteFill} pointerEvents="none">
-      {flat ? null : (
-        <Svg width="100%" height="100%">
-          <Defs>
-            <LinearGradient id={`g${id}`} x1={0.5 - dx} y1={0.5 - dy} x2={0.5 + dx} y2={0.5 + dy}>
-              <Stop offset={0} stopColor={c1} />
-              <Stop offset={0.5} stopColor={c2} />
-              <Stop offset={1} stopColor={c3} />
-            </LinearGradient>
-            <RadialGradient id={`h${id}`} cx={0.12} cy={0} r={0.75} fx={0.12} fy={0}>
-              <Stop offset={0} stopColor={colors.white} stopOpacity={heroSurface.highlightOpacity} />
-              <Stop offset={1} stopColor={colors.white} stopOpacity={0} />
-            </RadialGradient>
-          </Defs>
-          <Rect width="100%" height="100%" fill={`url(#g${id})`} />
-          <Rect width="100%" height="100%" fill={`url(#h${id})`} />
-        </Svg>
-      )}
-      <Image
-        source={grain.source}
-        resizeMode="repeat"
-        style={[StyleSheet.absoluteFill, { opacity: heroSurface.noiseOpacity }]}
-      />
-      <View style={styles.topEdge} />
-    </View>
-  );
-}
+const STAVE_HEIGHT = (stave.lines - 1) * stave.gap + StyleSheet.hairlineWidth;
 
 const styles = StyleSheet.create({
   base: {
@@ -78,15 +71,23 @@ const styles = StyleSheet.create({
     padding: spacing.card,
     gap: spacing.inCard,
   },
-  default: { backgroundColor: colors.surface, borderColor: colors.border },
+  default: { backgroundColor: colors.surface, borderColor: colors.border, ...shadow.card },
+  feature: { backgroundColor: colors.surfaceRaised, borderColor: colors.border, gap: spacing.inCardFeature, ...shadow.card },
   quiet: { backgroundColor: 'transparent', borderColor: colors.border },
-  heroOuter: { borderRadius: radius.lg, ...shadow.heroGlow },
-  hero: {
-    overflow: 'hidden',
-    borderColor: colors.borderStrong,
-    backgroundColor: colors.primary, // the flat fill; with `fill="gradient"` it shows only until the gradient draws
-    padding: spacing.cardHero,
-    gap: spacing.inCardHero,
+  hero: { backgroundColor: colors.surfaceRaised, borderColor: colors.border, ...shadow.card },
+  list: { paddingVertical: spacing.xs, gap: 0 },
+  selected: { borderColor: colors.primary },
+
+  stave: { flex: 1, height: STAVE_HEIGHT, justifyContent: 'space-between' },
+  staveLine: { height: StyleSheet.hairlineWidth, backgroundColor: stave.lineColor },
+  // Sits on the middle line.
+  note: {
+    position: 'absolute',
+    marginLeft: -stave.noteWidth / 2,
+    top: STAVE_HEIGHT / 2 - stave.noteHeight / 2,
+    width: stave.noteWidth,
+    height: stave.noteHeight,
+    borderRadius: stave.noteHeight / 2,
+    transform: [{ rotate: stave.noteTilt }],
   },
-  topEdge: { position: 'absolute', top: 0, left: 0, right: 0, height: 1, backgroundColor: colors.highlight },
 });
