@@ -27,7 +27,7 @@ export function AnnouncementItem({ item }: { item: Announcement }) {
         <View style={styles.tags}>
           {item.isPinned && <Badge label="📌 PINNED" color={colors.primary} textColor={colors.onPrimary} />}
           {item.instruments.map(i => (
-            <Badge key={i} label={capitalize(i).toUpperCase()} color={colors.border} textColor={colors.text} />
+            <Badge key={i} label={capitalize(i)} color={colors.border} textColor={colors.text} />
           ))}
         </View>
         <AppText style={styles.title}>{item.title}</AppText>
