@@ -25,7 +25,7 @@ export function AnnouncementItem({ item }: { item: Announcement }) {
       accessibilityHint={expanded ? 'Collapse' : 'Read the full message'}>
       <Card style={item.isPinned && [styles.pinned, { borderColor: colors.primary }]}>
         <View style={styles.tags}>
-          {item.isPinned && <Badge label="📌 PINNED" color={colors.primary} textColor={colors.onPrimary} />}
+          {item.isPinned && <Badge label="Pinned" color={colors.primary} textColor={colors.onPrimary} />}
           {item.instruments.map(i => (
             <Badge key={i} label={capitalize(i)} color={colors.border} textColor={colors.text} />
           ))}
