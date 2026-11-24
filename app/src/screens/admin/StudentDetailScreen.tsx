@@ -104,7 +104,7 @@ export function StudentDetailScreen({ route }: AdminScreenProps<'StudentDetail'>
         <AppText color="textSecondary">{student.email}</AppText>
         <AppText color="textSecondary">
           {student.phone ? `+91 ${student.phone}` : 'Phone not verified'}
-          {student.phoneVerified ? ' ✓' : ''}
+          {student.phoneVerified ? ' · Verified' : ''}
         </AppText>
         <AppText variant="caption" color="textSecondary">
           Joined {formatDate(new Date(student.createdAt))}
