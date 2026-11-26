@@ -34,5 +34,5 @@ const styles = StyleSheet.create({
     borderRadius: radius.pill,
   },
   dot: { width: 6, height: 6, borderRadius: 3 },
-  text: { fontWeight: '700', letterSpacing: 0.5 },
+  text: { fontWeight: '500' },
 });
