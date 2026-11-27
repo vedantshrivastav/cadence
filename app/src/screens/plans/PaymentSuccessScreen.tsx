@@ -58,5 +58,5 @@ const styles = StyleSheet.create({
   textCenter: { textAlign: 'center' },
   summary: { alignSelf: 'stretch' },
   row: { flexDirection: 'row', justifyContent: 'space-between', gap: spacing.md },
-  bold: { fontWeight: '600', flexShrink: 1, textAlign: 'right' },
+  bold: { fontWeight: '500', flexShrink: 1, textAlign: 'right' },
 });
